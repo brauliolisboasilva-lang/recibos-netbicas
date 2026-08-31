@@ -1,0 +1,86 @@
+=================================================================
+ EMISSAO DE RECIBOS - NETBICAS FIBRA
+ Aplicativo para instalar neste computador
+=================================================================
+
+O QUE E ESTE PROGRAMA
+----------------------
+Um programa que roda direto no seu computador (nao precisa de
+internet depois de instalado) para gerar recibos em PDF, com:
+  - numeracao de recibo crescente automatica (nao repete);
+  - a logo e os dados da NetBicas Telecom ja preenchidos;
+  - opcao de escolher onde salvar cada recibo no computador;
+  - historico dos ultimos recibos emitidos, com opcao de
+    reabrir/reimprimir qualquer um deles.
+
+
+COMO INSTALAR (fazer isso so uma vez)
+--------------------------------------
+1. Extraia esta pasta (se veio em .zip) para um lugar fixo no
+   computador, por exemplo: C:\RecibosNetBicas
+   (nao instale dentro de pastas temporarias ou pen drives)
+
+2. Se o computador ainda nao tem Python instalado, instale antes:
+     https://www.python.org/downloads/
+   Na tela de instalacao do Python, marque a caixinha
+     "Add python.exe to PATH"
+   antes de clicar em "Install Now". Isso e importante.
+
+3. Dentro da pasta do aplicativo, de dois cliques no arquivo:
+     Instalar.bat
+   Aguarde a mensagem "Instalacao concluida!".
+   Isso vai criar um atalho chamado "Recibos NetBicas" na sua
+   Area de Trabalho.
+
+
+COMO USAR NO DIA A DIA
+------------------------
+1. De dois cliques no atalho "Recibos NetBicas" na Area de
+   Trabalho.
+
+2. Preencha os dados do pagamento (recebedor, valor, forma de
+   pagamento, etc). O numero do recibo ja vem preenchido
+   automaticamente com o proximo numero disponivel.
+
+3. Clique em "Salvar recibo (PDF)". O programa vai perguntar
+   em qual pasta do computador voce quer salvar o arquivo PDF
+   (a pasta sugerida e "Documentos\Recibos NetBicas").
+
+4. Depois de salvar, o programa pergunta se voce quer abrir o
+   PDF na hora, para imprimir ou enviar por WhatsApp/e-mail.
+
+5. Os recibos ja emitidos ficam na lista "Ultimos recibos
+   emitidos", do lado esquerdo. De um duplo clique em qualquer
+   um deles para carregar os dados de novo (por exemplo, para
+   reimprimir uma segunda via).
+
+
+ONDE FICAM OS DADOS
+---------------------
+- O numero do proximo recibo e o historico ficam guardados no
+  arquivo:
+     dados\recibos.json
+  (dentro da propria pasta do aplicativo)
+
+- Os arquivos PDF dos recibos ficam salvos onde voce escolher
+  ao salvar cada recibo (sugestao: Documentos\Recibos NetBicas).
+
+IMPORTANTE: faca backups de tempos em tempos da pasta "dados"
+e da pasta onde os PDFs sao salvos, para nao perder o historico
+em caso de formatacao do computador.
+
+
+DUVIDAS FREQUENTES
+---------------------
+- "Aparece que o Python nao foi encontrado":
+  Instale o Python pelo link acima e marque "Add python.exe to
+  PATH" durante a instalacao. Depois rode o Instalar.bat de novo.
+
+- "Quero reinstalar do zero":
+  Apague a pasta "venv" dentro do aplicativo e rode o
+  Instalar.bat novamente. Isso nao apaga o historico de recibos.
+
+- "Posso mover a pasta do aplicativo depois de instalado?":
+  E melhor evitar. Se precisar mover, apague a pasta "venv" e
+  rode o Instalar.bat de novo na nova localizacao, e recrie o
+  atalho da Area de Trabalho.
