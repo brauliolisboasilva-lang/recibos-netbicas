@@ -61,6 +61,9 @@ ONDE FICAM OS DADOS
   arquivo:
      dados\recibos.json
   (dentro da propria pasta do aplicativo)
+  A cada gravacao o programa tambem guarda uma copia automatica
+  em dados\recibos.json.bak. Se o arquivo principal for danificado,
+  o programa recupera os dados dessa copia sozinho e avisa na tela.
 
 - Os arquivos PDF dos recibos ficam salvos onde voce escolher
   ao salvar cada recibo (sugestao: Documentos\Recibos NetBicas).
