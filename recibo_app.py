@@ -20,7 +20,8 @@ import json
 import os
 import sys
 import webbrowser
-from datetime import date
+import shutil
+from datetime import date, datetime
 from pathlib import Path
 
 import tkinter as tk
@@ -191,23 +192,72 @@ def parse_valor(texto: str) -> float:
 class Armazenamento:
     def __init__(self, arquivo: Path):
         self.arquivo = arquivo
+        self.backup = arquivo.with_suffix(arquivo.suffix + ".bak")
         self.arquivo.parent.mkdir(parents=True, exist_ok=True)
         self.dados = {"contador": 1, "recibos": {}}
+        # mensagem para mostrar ao usuario se houver problema ao carregar
+        self.aviso = ""
         self._carregar()
+
+    @staticmethod
+    def _ler(caminho: Path) -> dict:
+        with open(caminho, "r", encoding="utf-8") as f:
+            dados = json.load(f)
+        if not isinstance(dados, dict) or not isinstance(dados.get("recibos", {}), dict):
+            raise ValueError("formato inesperado")
+        return dados
 
     def _carregar(self):
         if self.arquivo.exists():
             try:
-                with open(self.arquivo, "r", encoding="utf-8") as f:
-                    self.dados = json.load(f)
-            except Exception:
-                pass
+                self.dados = self._ler(self.arquivo)
+            except Exception as exc:
+                # Nao descarta o arquivo com problema: guarda uma copia para
+                # analise e tenta recuperar a partir do backup automatico.
+                carimbo = datetime.now().strftime("%Y%m%d-%H%M%S")
+                corrompido = self.arquivo.with_name(
+                    f"{self.arquivo.stem}.corrompido-{carimbo}{self.arquivo.suffix}")
+                try:
+                    self.arquivo.replace(corrompido)
+                except OSError:
+                    corrompido = self.arquivo
+                try:
+                    self.dados = self._ler(self.backup)
+                    self.aviso = (
+                        f"O arquivo de dados estava danificado ({exc}).\n\n"
+                        f"Os dados foram recuperados do backup automatico.\n"
+                        f"Uma copia do arquivo danificado foi guardada em:\n{corrompido}")
+                    self.salvar()
+                except Exception:
+                    self.dados = {"contador": 1, "recibos": {}}
+                    self.aviso = (
+                        f"O arquivo de dados estava danificado ({exc}) e nao "
+                        f"havia backup valido.\n\n"
+                        f"Uma copia do arquivo danificado foi guardada em:\n{corrompido}\n\n"
+                        f"CONFIRA O NUMERO DO RECIBO antes de emitir, para nao "
+                        f"repetir numeros ja usados.")
         self.dados.setdefault("contador", 1)
         self.dados.setdefault("recibos", {})
+        # Garante que o contador nunca fique abaixo de um numero ja emitido.
+        numeros = [int(n) for n in self.dados["recibos"] if str(n).isdigit()]
+        if numeros:
+            self.dados["contador"] = max(int(self.dados["contador"]), max(numeros) + 1)
 
     def salvar(self):
-        with open(self.arquivo, "w", encoding="utf-8") as f:
+        """Grava de forma segura: escreve num arquivo temporario e so depois
+        substitui o original, e mantem uma copia de backup. Assim,
+        uma queda de energia no meio da gravacao nao apaga o historico."""
+        tmp = self.arquivo.with_suffix(self.arquivo.suffix + ".tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(self.dados, f, ensure_ascii=False, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, self.arquivo)
+        # backup = copia da ultima gravacao bem-sucedida
+        try:
+            shutil.copy2(self.arquivo, self.backup)
+        except OSError:
+            pass
 
     def proximo_numero(self) -> int:
         return int(self.dados.get("contador", 1))
@@ -396,6 +446,10 @@ class RecibosApp(tk.Tk):
         self._montar_layout()
         self._novo_recibo(mostrar_status=False)
         self._atualizar_historico()
+
+        if self.storage.aviso:
+            self.after(200, lambda: messagebox.showwarning(
+                "Atencao: dados recuperados", self.storage.aviso))
 
     # -- estilo -------------------------------------------------------
     def _montar_estilo(self):
